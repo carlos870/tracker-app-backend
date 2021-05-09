@@ -6,8 +6,8 @@
         "build": "tsc && sam build --parallel",
         "deploy": "sam deploy",
         "test-get": "sam local invoke tracker-app-journey-get -n ./events/env.json -e ./events/journey-get.json",
-        "test-start": "sam local invoke tracker-app-journey-start -n ./events/env.json -e ./events/journey-start.json",
-        "test-stop": "sam local invoke tracker-app-journey-stop -n ./events/env.json -e ./events/journey-stop.json",
+        "test-start": "sam local invoke tracker-app-journey-start -e ./events/journey-start.json",
+        "test-stop": "sam local invoke tracker-app-journey-stop -e ./events/journey-stop.json",
         "test-worker": "sam local invoke tracker-app-location-worker -n ./events/env.json -e ./events/worker.json"
     },
     "author": "",
@@ -15,6 +15,7 @@
     "dependencies": {
         "@aws-sdk/client-apigatewaymanagementapi": "^3.14.0",
         "@aws-sdk/client-dynamodb": "^3.14.0",
+        "@aws-sdk/util-dynamodb": "^3.14.0",
         "joi": "^17.4.0",
         "nanoid": "^3.1.22"
     },

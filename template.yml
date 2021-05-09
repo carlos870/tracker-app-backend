@@ -1,0 +1,183 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Description: TrackerApp backend infrastructure.
+
+Parameters:
+  StageName:
+    Type: String
+    Default: v1
+    Description: Enter the stage to use on API Gateway.
+
+Resources:
+  TAppJourneyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TAppJourneyTable
+      AttributeDefinitions:
+        - AttributeName: JourneyId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: JourneyId
+          KeyType: HASH
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+
+  TAppTokenTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TAppTokenTable
+      AttributeDefinitions:
+        - AttributeName: ManagementToken
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ManagementToken
+          KeyType: HASH
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+
+  TAppConnectionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TAppConnectionTable
+      AttributeDefinitions:
+        - AttributeName: ConnectionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ConnectionId
+          KeyType: HASH
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+
+  TAppRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: TAppRestAPI
+      EndpointConfiguration:
+        Type: EDGE
+      StageName: !Ref StageName
+      OpenApiVersion: 3.0.1
+      Auth:
+        DefaultAuthorizer: TAppRestRequestAuthorizer
+        Authorizers:
+          TAppRestRequestAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !GetAtt TAppJourneyAuthFunction.Arn
+            ReauthorizeEvery: 600
+            Identity:
+              Headers:
+                - Authorization
+
+  TAppJourneyStartFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: tracker-app-journey-start
+      Handler: src/handlers/journeyPost.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 15
+      AutoPublishAlias: live
+      Environment:
+        Variables:
+          JOURNEY_TABLE: !Ref TAppJourneyTable
+          TOKEN_TABLE: !Ref TAppTokenTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppJourneyTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppTokenTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TAppRestApi
+            Method: POST
+            Path: /journey
+            Auth:
+              Authorizer: "NONE"
+
+  TAppJourneyStopFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: tracker-app-journey-stop
+      Handler: src/handlers/journeyDelete.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 15
+      AutoPublishAlias: live
+      Environment:
+        Variables:
+          JOURNEY_TABLE: !Ref TAppJourneyTable
+          TOKEN_TABLE: !Ref TAppTokenTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppJourneyTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppTokenTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TAppRestApi
+            Method: DELETE
+            Path: /journey/{id}
+
+  TAppJourneyAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: tracker-app-journey-auth
+      Handler: src/handlers/journeyAuth.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 15
+      AutoPublishAlias: live
+      Environment:
+        Variables:
+          JOURNEY_TABLE: !Ref TAppJourneyTable
+          TOKEN_TABLE: !Ref TAppTokenTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppJourneyTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppTokenTable
+
+  TAppJourneyStartFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyStartFunction]]
+      RetentionInDays: 30
+
+  TAppJourneyStopFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyStopFunction]]
+      RetentionInDays: 30
+
+  TAppJourneyAuthFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyAuthFunction]]
+      RetentionInDays: 30
+
+Outputs:
+  TAppRestUrl:
+    Description: "URL used to invoke TrackerApp REST endpoints."
+    Value: !Sub "https://${TAppRestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"

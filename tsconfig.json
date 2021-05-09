@@ -5,6 +5,7 @@
 		"noImplicitAny": true,
 		"preserveConstEnums": true,
 		"outDir": "./src",
+		"rootDir": "./src-ts",
 		"sourceMap": true,
 		"esModuleInterop": true
 	},
