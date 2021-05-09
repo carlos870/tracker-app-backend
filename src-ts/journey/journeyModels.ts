@@ -9,9 +9,6 @@ export interface Journey {
     expireDate: Date;
     description: string;
     managementToken: string;
-    latitude?: number;
-    longitude?: number;
-    updateDate?: Date;
 };
 
 export interface startJourneyInput {
@@ -20,15 +17,29 @@ export interface startJourneyInput {
     ttl: number;
 }
 
+export interface stopJourneyInput {
+    journeyId: string;
+    endDate: Date;
+}
+
+export async function parseStartJourneyInput(obj: any): Promise<startJourneyInput> {
+    return await validate(startJourneyInputSchema, obj) as startJourneyInput;
+}
+
+export async function parseStopJourneyInput(obj: any): Promise<stopJourneyInput> {
+    return await validate(stopJourneyInputSchema, obj) as stopJourneyInput;
+}
+
 const startJourneyInputSchema = Joi.object({
     description: Joi.string(),
     ttl: Joi.number().min(300).max(260000).required(),
     userAccessCode: Joi.string().min(5).required()
 });
 
-export async function parseStartJourneyInput(obj: any): Promise<startJourneyInput> {
-    return await validate(startJourneyInputSchema, obj) as startJourneyInput;
-}
+const stopJourneyInputSchema = Joi.object({
+    journeyId: Joi.string().min(5).required(),
+    endDate: Joi.date().required()
+});
 
 async function validate(schema: Joi.ObjectSchema, value: any) {
     try {

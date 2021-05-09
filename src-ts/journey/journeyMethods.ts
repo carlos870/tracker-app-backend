@@ -1,6 +1,8 @@
-import { startJourneyInput, Journey } from './journeyModels';
-import { addNewJourney } from './journeyDb';
+import { startJourneyInput, stopJourneyInput, Journey } from './journeyModels';
+import { addNewJourney, terminateJourney, DbErrors } from './journeyDb';
 import { generateId, generateToken } from '../utils/IdGenerator';
+import CustomError from '../utils/CustomError';
+import Errors from '../utils/Errors';
 
 async function startJourney(data: startJourneyInput) {
     const journeyId = generateId();
@@ -28,6 +30,23 @@ async function startJourney(data: startJourneyInput) {
     }
 }
 
+async function stopJourney(data: stopJourneyInput) {
+    const { journeyId, endDate } = data;
+
+    try {
+        await terminateJourney(journeyId, endDate);
+    } catch (err) {
+        if (err.name === DbErrors.ConditionalCheckFailedException) {
+            throw new CustomError(Errors.NOT_FOUND);
+        }
+
+        throw err;
+    }
+
+    console.log(`Journey [${journeyId}] successfully terminated.`);
+}
+
 export {
-    startJourney
+    startJourney,
+    stopJourney
 };
