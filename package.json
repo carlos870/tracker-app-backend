@@ -1,0 +1,28 @@
+{
+    "name": "tracker-app-backend",
+    "description": "Some description about TrackerApp.",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "tsc && sam build --parallel",
+        "deploy": "sam deploy",
+        "test-get": "sam local invoke tracker-app-journey-get -n ./events/env.json -e ./events/journey-get.json",
+        "test-start": "sam local invoke tracker-app-journey-start -n ./events/env.json -e ./events/journey-start.json",
+        "test-stop": "sam local invoke tracker-app-journey-stop -n ./events/env.json -e ./events/journey-stop.json",
+        "test-worker": "sam local invoke tracker-app-location-worker -n ./events/env.json -e ./events/worker.json"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@aws-sdk/client-apigatewaymanagementapi": "^3.14.0",
+        "@aws-sdk/client-dynamodb": "^3.14.0",
+        "joi": "^17.4.0",
+        "nanoid": "^3.1.22"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.76",
+        "@types/joi": "^17.2.3",
+        "@types/nanoid": "^2.1.0",
+        "@types/node": "^15.0.2",
+        "typescript": "^4.2.4"
+    }
+}
