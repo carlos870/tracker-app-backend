@@ -1,8 +1,9 @@
-import { startJourneyInput, stopJourneyInput, Journey } from './journeyModels';
-import { addNewJourney, terminateJourney, DbErrors } from './journeyDb';
+import { startJourneyInput, stopJourneyInput, authJourneyInput, Journey } from './journeyModels';
+import { addNewJourney, terminateJourney, validateToken, DbErrors } from './journeyDb';
 import { generateId, generateToken } from '../utils/IdGenerator';
 import CustomError from '../utils/CustomError';
 import Errors from '../utils/Errors';
+import * as Policy from '../utils/Policy';
 
 async function startJourney(data: startJourneyInput) {
     const journeyId = generateId();
@@ -15,7 +16,7 @@ async function startJourney(data: startJourneyInput) {
         description: data.description,
         startDate: new Date(),
         expireDate: expireDate,
-        managementToken: generateToken(journeyId, data.userAccessCode)
+        managementToken: generateToken(journeyId, data.accessCode)
     };
 
     await addNewJourney(journey);
@@ -46,7 +47,30 @@ async function stopJourney(data: stopJourneyInput) {
     console.log(`Journey [${journeyId}] successfully terminated.`);
 }
 
+async function authenticateJourney(data: authJourneyInput) {
+    const { journeyId, managementToken } = data;
+
+    const tokenData = await validateToken(managementToken);
+
+    if (tokenData === null || journeyId !== tokenData.journeyId) {
+        console.warn(`Token [${managementToken}] was not found.`);
+
+        return Policy.deny(managementToken);
+    }
+
+    console.log(`Token [${managementToken}] is valid for journey [${journeyId}].`);
+
+    let policy = Policy.allow(managementToken);
+
+    policy.context = {
+        journeyId: journeyId
+    };
+
+    return policy;
+}
+
 export {
     startJourney,
-    stopJourney
+    stopJourney,
+    authenticateJourney
 };

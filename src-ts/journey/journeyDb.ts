@@ -10,7 +10,7 @@ import {
     unmarshall
 } from '@aws-sdk/util-dynamodb';
 
-import { Journey } from './journeyModels';
+import { Journey, tokenValidationOutput } from './journeyModels';
 
 const AWS_REGION = process.env.AWS_REGION;
 const JOURNEY_TABLE = process.env.JOURNEY_TABLE;
@@ -74,8 +74,31 @@ async function terminateJourney(journeyId: string, endDate: Date) {
     await dbClient.send(new UpdateItemCommand(params));
 }
 
+async function validateToken(managementToken: string) {
+    const params = {
+        TableName: TOKEN_TABLE,
+        Key: marshall({
+            ManagementToken: managementToken
+        })
+    };
+
+    const { Item } = await dbClient.send(new GetItemCommand(params));
+
+    if (!Item) {
+        return null;
+    }
+
+    const parsedItem = unmarshall(Item);
+
+    return {
+        managementToken: parsedItem.ManagementToken,
+        journeyId: parsedItem.JourneyId
+    } as tokenValidationOutput;
+}
+
 export {
     DbErrors,
     addNewJourney,
-    terminateJourney
+    terminateJourney,
+    validateToken
 };
