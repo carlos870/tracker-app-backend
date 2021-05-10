@@ -1,9 +1,40 @@
-import { startJourneyInput, stopJourneyInput, authJourneyInput, Journey } from './journeyModels';
-import { addNewJourney, terminateJourney, validateToken, DbErrors } from './journeyDb';
+import {
+    Journey,
+    getJourneyInput,
+    startJourneyInput,
+    stopJourneyInput,
+    authJourneyInput,
+    setLocationInput,
+    getJourneyOutput
+} from './journeyModels';
+
+import {
+    fetchJourneyData,
+    addNewJourney,
+    terminateJourney,
+    setLocation,
+    validateToken,
+    DbErrors
+} from './journeyDb';
+
 import { generateId, generateToken } from '../utils/IdGenerator';
 import CustomError from '../utils/CustomError';
 import Errors from '../utils/Errors';
 import * as Policy from '../utils/Policy';
+
+async function getJourney(data: getJourneyInput) {
+    const { journeyId } = data;
+
+    const result = await fetchJourneyData(journeyId);
+
+    if (result === null) {
+        throw new CustomError(Errors.NOT_FOUND);
+    }
+
+    console.log(`Returning journey [${JSON.stringify(result)}].`);
+
+    return result;
+}
 
 async function startJourney(data: startJourneyInput) {
     const journeyId = generateId();
@@ -47,7 +78,23 @@ async function stopJourney(data: stopJourneyInput) {
     console.log(`Journey [${journeyId}] successfully terminated.`);
 }
 
-async function authenticateJourney(data: authJourneyInput) {
+async function updateLocation(data: setLocationInput) {
+    const { journeyId, latitude, longitude } = data;
+
+    try {
+        await setLocation(data);
+    } catch (err) {
+        if (err.name === DbErrors.ConditionalCheckFailedException) {
+            throw new CustomError(Errors.NOT_FOUND);
+        }
+
+        throw err;
+    }
+
+    console.log(`Journey [${journeyId}] successfully updated with position [${latitude} / ${longitude}].`);
+}
+
+async function authenticateToken(data: authJourneyInput) {
     const { journeyId, managementToken } = data;
 
     const tokenData = await validateToken(managementToken);
@@ -70,7 +117,9 @@ async function authenticateJourney(data: authJourneyInput) {
 }
 
 export {
+    getJourney,
     startJourney,
     stopJourney,
-    authenticateJourney
+    updateLocation,
+    authenticateToken
 };

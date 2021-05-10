@@ -1,6 +1,6 @@
 import { APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 
-import { authenticateJourney } from '../journey/journeyMethods';
+import { authenticateToken } from '../journey/journeyMethods';
 import { parseAuthJourneyInput } from '../journey/journeyModels';
 import HttpCodes from '../utils/HttpCodes';
 
@@ -13,7 +13,7 @@ exports.handler = async (event: APIGatewayRequestAuthorizerEvent) => {
 
         console.log(`New [AUTH] request with [${JSON.stringify(parsedInput)}].`);
 
-        const policy = await authenticateJourney(parsedInput);
+        const policy = await authenticateToken(parsedInput);
 
         return policy;
     } catch (err) {

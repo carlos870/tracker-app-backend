@@ -9,6 +9,23 @@ export interface Journey {
     expireDate: Date;
     description: string;
     managementToken: string;
+    latitude?: number;
+    longitude?: number;
+    updateDate?: Date;
+};
+
+export interface getJourneyInput {
+    journeyId: string;
+}
+
+export interface getJourneyOutput {
+    journeyId: string;
+    startDate: Date;
+    endDate?: Date;
+    description: string;
+    latitude?: number;
+    longitude?: number;
+    updateDate?: Date;
 };
 
 export interface startJourneyInput {
@@ -22,12 +39,23 @@ export interface stopJourneyInput {
     endDate: Date;
 }
 
+export interface setLocationInput {
+    journeyId: string;
+    latitude: number;
+    longitude: number;
+    date: Date;
+}
+
 export interface authJourneyInput {
     journeyId: string;
     managementToken: string;
 }
 
 export interface tokenValidationOutput extends authJourneyInput { };
+
+export async function parseGetJourneyInput(obj: any): Promise<getJourneyInput> {
+    return await validate(getJourneyInputSchema, obj) as getJourneyInput;
+}
 
 export async function parseStartJourneyInput(obj: any): Promise<startJourneyInput> {
     return await validate(startJourneyInputSchema, obj) as startJourneyInput;
@@ -37,9 +65,17 @@ export async function parseStopJourneyInput(obj: any): Promise<stopJourneyInput>
     return await validate(stopJourneyInputSchema, obj) as stopJourneyInput;
 }
 
+export async function parseSetLocationInput(obj: any): Promise<setLocationInput> {
+    return await validate(setLocationInputSchema, obj) as setLocationInput;
+}
+
 export async function parseAuthJourneyInput(obj: any): Promise<authJourneyInput> {
     return await validate(authJourneyInputSchema, obj) as authJourneyInput;
 }
+
+const getJourneyInputSchema = Joi.object({
+    journeyId: Joi.string().min(5).required(),
+});
 
 const startJourneyInputSchema = Joi.object({
     description: Joi.string(),
@@ -50,6 +86,13 @@ const startJourneyInputSchema = Joi.object({
 const stopJourneyInputSchema = Joi.object({
     journeyId: Joi.string().min(5).required(),
     endDate: Joi.date().required()
+});
+
+const setLocationInputSchema = Joi.object({
+    journeyId: Joi.string().min(5).required(),
+    latitude: Joi.number().required(),
+    longitude: Joi.number().required(),
+    date: Joi.date().required()
 });
 
 const authJourneyInputSchema = Joi.object({
