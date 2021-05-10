@@ -3,9 +3,8 @@ import {
     getJourneyInput,
     startJourneyInput,
     stopJourneyInput,
-    authJourneyInput,
-    setLocationInput,
-    getJourneyOutput
+    tokenAuthInput,
+    setLocationInput
 } from './journeyModels';
 
 import {
@@ -94,7 +93,7 @@ async function updateLocation(data: setLocationInput) {
     console.log(`Journey [${journeyId}] successfully updated with position [${latitude} / ${longitude}].`);
 }
 
-async function authenticateToken(data: authJourneyInput) {
+async function authenticateToken(data: tokenAuthInput) {
     const { journeyId, managementToken } = data;
 
     const tokenData = await validateToken(managementToken);

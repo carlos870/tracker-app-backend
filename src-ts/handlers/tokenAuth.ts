@@ -1,12 +1,12 @@
 import { APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 
 import { authenticateToken } from '../journey/journeyMethods';
-import { parseAuthJourneyInput } from '../journey/journeyModels';
+import { parseTokenAuthInput } from '../journey/journeyModels';
 import HttpCodes from '../utils/HttpCodes';
 
 exports.handler = async (event: APIGatewayRequestAuthorizerEvent) => {
     try {
-        const parsedInput = await parseAuthJourneyInput({
+        const parsedInput = await parseTokenAuthInput({
             journeyId: event.pathParameters.id,
             managementToken: event.headers.Authorization
         });

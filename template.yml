@@ -80,7 +80,7 @@ Resources:
         Authorizers:
           TAppRestRequestAuthorizer:
             FunctionPayloadType: REQUEST
-            FunctionArn: !GetAtt TAppJourneyAuthFunction.Arn
+            FunctionArn: !GetAtt TAppTokenAuthFunction.Arn
             ReauthorizeEvery: 600
             Identity:
               Headers:
@@ -192,11 +192,11 @@ Resources:
             Method: PUT
             Path: /journey/{id}/location
 
-  TAppJourneyAuthFunction:
+  TAppTokenAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: tracker-app-journey-auth
-      Handler: src/handlers/journeyAuth.handler
+      Handler: src/handlers/tokenAuth.handler
       Runtime: nodejs14.x
       MemorySize: 128
       Timeout: 15
@@ -236,10 +236,10 @@ Resources:
         !Join ["/", ["/aws/lambda", !Ref TAppJourneyLocationSetFunction]]
       RetentionInDays: 30
 
-  TAppJourneyAuthFunctionLogGroup:
+  TAppTokenAuthFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyAuthFunction]]
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppTokenAuthFunction]]
       RetentionInDays: 30
 
 Outputs:

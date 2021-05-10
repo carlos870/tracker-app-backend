@@ -46,12 +46,12 @@ export interface setLocationInput {
     date: Date;
 }
 
-export interface authJourneyInput {
+export interface tokenAuthInput {
     journeyId: string;
     managementToken: string;
 }
 
-export interface tokenValidationOutput extends authJourneyInput { };
+export interface tokenValidationOutput extends tokenAuthInput { };
 
 export async function parseGetJourneyInput(obj: any): Promise<getJourneyInput> {
     return await validate(getJourneyInputSchema, obj) as getJourneyInput;
@@ -69,8 +69,8 @@ export async function parseSetLocationInput(obj: any): Promise<setLocationInput>
     return await validate(setLocationInputSchema, obj) as setLocationInput;
 }
 
-export async function parseAuthJourneyInput(obj: any): Promise<authJourneyInput> {
-    return await validate(authJourneyInputSchema, obj) as authJourneyInput;
+export async function parseTokenAuthInput(obj: any): Promise<tokenAuthInput> {
+    return await validate(authTokenInputSchema, obj) as tokenAuthInput;
 }
 
 const getJourneyInputSchema = Joi.object({
@@ -95,7 +95,7 @@ const setLocationInputSchema = Joi.object({
     date: Joi.date().required()
 });
 
-const authJourneyInputSchema = Joi.object({
+const authTokenInputSchema = Joi.object({
     journeyId: Joi.string().min(5).required(),
     managementToken: Joi.string().min(5).required()
 });

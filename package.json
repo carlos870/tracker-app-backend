@@ -10,7 +10,7 @@
         "test-stop": "sam local invoke tracker-app-journey-stop -e ./events/journey-stop.json",
         "test-location": "sam local invoke tracker-app-journey-update-location -e ./events/location-set.json"
     },
-    "author": "",
+    "author": "carlos870",
     "license": "ISC",
     "dependencies": {
         "@aws-sdk/client-apigatewaymanagementapi": "^3.14.0",
