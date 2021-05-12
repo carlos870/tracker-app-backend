@@ -8,17 +8,22 @@ Parameters:
     Type: String
     Default: v1
     Description: Enter the stage to use on API Gateway.
+  FunctionAlias:
+    Type: String
+    Default: live
+    Description: Enter the alias to use on Lambda functions.
 
 Globals:
   Function:
     Runtime: nodejs14.x
     MemorySize: 128
     Timeout: 15
-    AutoPublishAlias: live
+    AutoPublishAlias: !Ref FunctionAlias
     Environment:
       Variables:
         JOURNEY_TABLE: !Ref TAppJourneyTable
         TOKEN_TABLE: !Ref TAppTokenTable
+        CONNECTIONS_TABLE: !Ref TAppConnectionTable
 
 Resources:
   TAppJourneyTable:
@@ -212,7 +217,132 @@ Resources:
       LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppTokenAuthFunction]]
       RetentionInDays: 30
 
+  TAppWsApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: TAppWebSocketApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  TAppWsApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref TAppWsApi
+      AutoDeploy: true
+      StageName: !Ref StageName
+
+  TAppWsConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TAppWsApi
+      RouteKey: $connect
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref TAppWsAuthorizer
+      Target: !Join ["/", ["integrations", !Ref TAppWsConnectIntegration]]
+
+  TAppWsDisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TAppWsApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      Target: !Join ["/", ["integrations", !Ref TAppWsDisconnectIntegration]]
+
+  TAppWsConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TAppWsApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TAppOnConnectFunction.Alias}/invocations
+
+  TAppWsDisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TAppWsApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TAppOnDisconnectFunction.Alias}/invocations
+
+  TAppWsAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref TAppWsApi
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TAppWsAuthFunction.Alias}/invocations
+      IdentitySource:
+        - route.request.querystring.token
+      Name: TrackerApp-WsAuth
+
+  TAppOnConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: TrackerApp-OnConnect
+      Handler: src/handlers/ws-connect.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppConnectionTable
+
+  TAppOnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: TrackerApp-OnDisconnect
+      Handler: src/handlers/ws-disconnect.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppConnectionTable
+
+  TAppWsAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: TrackerApp-WsAuth
+      Handler: src/handlers/ws-auth.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppConnectionTable
+
+  TAppOnConnectFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppOnConnectFunction]]
+      RetentionInDays: 30
+
+  TAppOnDisconnectFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppOnDisconnectFunction]]
+      RetentionInDays: 30
+
+  TAppWsAuthFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppWsAuthFunction]]
+      RetentionInDays: 30
+
+  TAppOnConnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TAppOnConnectFunction.Alias
+      Principal: apigateway.amazonaws.com
+
+  TAppOnDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TAppOnDisconnectFunction.Alias
+      Principal: apigateway.amazonaws.com
+
+  TAppWsAuthPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TAppWsAuthFunction.Alias
+      Principal: apigateway.amazonaws.com
+
 Outputs:
   TAppRestUrl:
     Description: "URL used to invoke TrackerApp REST endpoints."
     Value: !Sub "https://${TAppRestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+
+  TAppWebSocketUrl:
+    Description: "URL used to open WS connections to TrackerApp backend."
+    Value: !Sub "wss://${TAppWsApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
