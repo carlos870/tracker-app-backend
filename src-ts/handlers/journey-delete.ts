@@ -1,20 +1,19 @@
 import { APIGatewayEvent, APIGatewayEventRequestContext } from 'aws-lambda';
 
-import { updateLocation } from '../journey/journeyMethods';
-import { parseSetLocationInput } from '../journey/journeyModels';
 import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
+import { parseJourneyStopInput } from '../journey/models';
+import { stopJourney } from '../journey/methods';
 
-exports.handler = async (event: APIGatewayEvent, context: APIGatewayEventRequestContext) => {
+export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
-        const parsedInput = await parseSetLocationInput({
-            ...JSON.parse(event.body),
+        const parsedInput = await parseJourneyStopInput({
             journeyId: event.pathParameters.id
         });
 
-        console.log(`New [PUT] request with [${JSON.stringify(parsedInput)}].`);
+        console.log(`New [DELETE] request with [${JSON.stringify(parsedInput)}].`);
 
-        await updateLocation(parsedInput);
+        await stopJourney(parsedInput);
 
         return {
             statusCode: HttpCodes.OK

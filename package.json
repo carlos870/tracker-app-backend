@@ -5,10 +5,10 @@
     "scripts": {
         "build": "tsc && sam build --parallel",
         "deploy": "sam deploy",
-        "test-get": "sam local invoke tracker-app-journey-get -e ./events/journey-get.json",
-        "test-start": "sam local invoke tracker-app-journey-start -e ./events/journey-start.json",
-        "test-stop": "sam local invoke tracker-app-journey-stop -e ./events/journey-stop.json",
-        "test-location": "sam local invoke tracker-app-journey-update-location -e ./events/location-set.json"
+        "test-get": "sam local invoke TrackerApp-JourneyGet -e ./events/journey-get.json",
+        "test-post": "sam local invoke TrackerApp-JourneyPost -e ./events/journey-post.json",
+        "test-delete": "sam local invoke TrackerApp-JourneyDelete -e ./events/journey-delete.json",
+        "test-location": "sam local invoke TrackerApp-LocationPut -e ./events/location-put.json"
     },
     "author": "carlos870",
     "license": "ISC",

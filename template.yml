@@ -9,6 +9,17 @@ Parameters:
     Default: v1
     Description: Enter the stage to use on API Gateway.
 
+Globals:
+  Function:
+    Runtime: nodejs14.x
+    MemorySize: 128
+    Timeout: 15
+    AutoPublishAlias: live
+    Environment:
+      Variables:
+        JOURNEY_TABLE: !Ref TAppJourneyTable
+        TOKEN_TABLE: !Ref TAppTokenTable
+
 Resources:
   TAppJourneyTable:
     Type: AWS::DynamoDB::Table
@@ -89,16 +100,8 @@ Resources:
   TAppJourneyGetFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: tracker-app-journey-get
-      Handler: src/handlers/journeyGet.handler
-      Runtime: nodejs14.x
-      MemorySize: 128
-      Timeout: 15
-      AutoPublishAlias: live
-      Environment:
-        Variables:
-          JOURNEY_TABLE: !Ref TAppJourneyTable
-          TOKEN_TABLE: !Ref TAppTokenTable
+      FunctionName: TrackerApp-JourneyGet
+      Handler: src/handlers/journey-get.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppJourneyTable
@@ -112,19 +115,11 @@ Resources:
             Method: GET
             Path: /journey/{id}
 
-  TAppJourneyStartFunction:
+  TAppJourneyPostFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: tracker-app-journey-start
-      Handler: src/handlers/journeyPost.handler
-      Runtime: nodejs14.x
-      MemorySize: 128
-      Timeout: 15
-      AutoPublishAlias: live
-      Environment:
-        Variables:
-          JOURNEY_TABLE: !Ref TAppJourneyTable
-          TOKEN_TABLE: !Ref TAppTokenTable
+      FunctionName: TrackerApp-JourneyPost
+      Handler: src/handlers/journey-post.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppJourneyTable
@@ -140,19 +135,11 @@ Resources:
             Auth:
               Authorizer: "NONE"
 
-  TAppJourneyStopFunction:
+  TAppJourneyDeleteFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: tracker-app-journey-stop
-      Handler: src/handlers/journeyDelete.handler
-      Runtime: nodejs14.x
-      MemorySize: 128
-      Timeout: 15
-      AutoPublishAlias: live
-      Environment:
-        Variables:
-          JOURNEY_TABLE: !Ref TAppJourneyTable
-          TOKEN_TABLE: !Ref TAppTokenTable
+      FunctionName: TrackerApp-JourneyDelete
+      Handler: src/handlers/journey-delete.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppJourneyTable
@@ -166,19 +153,11 @@ Resources:
             Method: DELETE
             Path: /journey/{id}
 
-  TAppJourneyLocationSetFunction:
+  TAppLocationPutFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: tracker-app-journey-update-location
-      Handler: src/handlers/locationSet.handler
-      Runtime: nodejs14.x
-      MemorySize: 128
-      Timeout: 15
-      AutoPublishAlias: live
-      Environment:
-        Variables:
-          JOURNEY_TABLE: !Ref TAppJourneyTable
-          TOKEN_TABLE: !Ref TAppTokenTable
+      FunctionName: TrackerApp-LocationPut
+      Handler: src/handlers/location-put.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppJourneyTable
@@ -195,16 +174,8 @@ Resources:
   TAppTokenAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: tracker-app-journey-auth
-      Handler: src/handlers/tokenAuth.handler
-      Runtime: nodejs14.x
-      MemorySize: 128
-      Timeout: 15
-      AutoPublishAlias: live
-      Environment:
-        Variables:
-          JOURNEY_TABLE: !Ref TAppJourneyTable
-          TOKEN_TABLE: !Ref TAppTokenTable
+      FunctionName: TrackerApp-TokenAuth
+      Handler: src/handlers/token-auth.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppJourneyTable
@@ -217,23 +188,22 @@ Resources:
       LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyGetFunction]]
       RetentionInDays: 30
 
-  TAppJourneyStartFunctionLogGroup:
+  TAppJourneyPostFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyStartFunction]]
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyPostFunction]]
       RetentionInDays: 30
 
-  TAppJourneyStopFunctionLogGroup:
+  TAppJourneyDeleteFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyStopFunction]]
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppJourneyDeleteFunction]]
       RetentionInDays: 30
 
-  TAppJourneyLocationSetFunctionLogGroup:
+  TAppLocationPutFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName:
-        !Join ["/", ["/aws/lambda", !Ref TAppJourneyLocationSetFunction]]
+      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppLocationPutFunction]]
       RetentionInDays: 30
 
   TAppTokenAuthFunctionLogGroup:

@@ -1,26 +1,39 @@
-enum Effect {
+export enum Effect {
     allow = 'Allow',
     deny = 'Deny'
-}
+};
 
-function generate(principalId: string, effect: string) {
-    let authResponse: any = {
-        principalId: principalId
+interface IPolicyStatement {
+    Action: string;
+    Effect: string;
+    Resource: string;
+};
+
+interface IPolicyDocument {
+    Version: string;
+    Statement: IPolicyStatement[];
+};
+
+interface IPolicy {
+    principalId: string;
+    policyDocument: IPolicyDocument;
+    context?: object
+};
+
+export default function generate(principalId: string, effect: Effect): IPolicy {
+    const policy = {
+        principalId: principalId,
+        policyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+                {
+                    Action: 'execute-api:Invoke',
+                    Effect: effect,
+                    Resource: '*'
+                }
+            ]
+        }
     };
 
-    let policyDocument: any = {};
-    policyDocument.Version = '2012-10-17'; // default version
-    policyDocument.Statement = [];
-
-    let statementOne: any = {};
-    statementOne.Action = 'execute-api:Invoke'; // default action
-    statementOne.Effect = effect;
-    statementOne.Resource = '*';
-    policyDocument.Statement[0] = statementOne;
-    authResponse.policyDocument = policyDocument;
-
-    return authResponse;
-}
-
-export const allow = (principalId: string) => generate(principalId, Effect.allow);
-export const deny = (principalId: string) => generate(principalId, Effect.deny);
+    return policy;
+};

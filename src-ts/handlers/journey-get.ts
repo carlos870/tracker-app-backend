@@ -1,13 +1,13 @@
 import { APIGatewayEvent, APIGatewayEventRequestContext } from 'aws-lambda';
 
-import { getJourney } from '../journey/journeyMethods';
-import { parseGetJourneyInput } from '../journey/journeyModels';
 import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
+import { parseJourneyGetInput } from '../journey/models';
+import { getJourney } from '../journey/methods';
 
-exports.handler = async (event: APIGatewayEvent, context: APIGatewayEventRequestContext) => {
+export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
-        const parsedInput = await parseGetJourneyInput({
+        const parsedInput = await parseJourneyGetInput({
             journeyId: event.pathParameters.id
         });
 

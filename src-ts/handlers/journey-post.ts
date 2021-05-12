@@ -1,13 +1,13 @@
 import { APIGatewayEvent, APIGatewayEventRequestContext } from 'aws-lambda';
 
-import { startJourney } from '../journey/journeyMethods';
-import { parseStartJourneyInput } from '../journey/journeyModels';
 import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
+import { parseJourneyStartInput } from '../journey/models';
+import { startJourney } from '../journey/methods';
 
-exports.handler = async (event: APIGatewayEvent, context: APIGatewayEventRequestContext) => {
+export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
-        const parsedInput = await parseStartJourneyInput(JSON.parse(event.body));
+        const parsedInput = await parseJourneyStartInput(JSON.parse(event.body));
 
         console.log(`New [POST] request with [${JSON.stringify(parsedInput)}].`);
 
