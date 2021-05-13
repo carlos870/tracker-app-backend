@@ -1,16 +1,25 @@
 import Joi from 'joi';
-import { IJourneyId } from '../journey/models';
 import Validate from '../utils/Validation';
 
-export interface ITokenAuth {
-    managementToken: string;
+export enum TokenTypes {
+    access = 'access',
+    management = 'management'
 };
 
-export async function parseTokenAuthInput(value: ITokenAuth & IJourneyId) {
-    return await Validate<ITokenAuth & IJourneyId>(tokenAuthSchema, value);
+export interface ITokenAuth {
+    token: string;
+    type: TokenTypes
+};
+
+export interface ITokenList {
+    tokens: ITokenAuth[]
+};
+
+export async function parseTokenAuthInput(value: ITokenAuth) {
+    return await Validate<ITokenAuth>(tokenAuthSchema, value);
 };
 
 const tokenAuthSchema = Joi.object({
-    journeyId: Joi.string().min(5).required(),
-    managementToken: Joi.string().min(5).required()
+    token: Joi.string().required(),
+    type: Joi.string().required()
 });

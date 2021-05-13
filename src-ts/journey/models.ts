@@ -27,11 +27,7 @@ export interface IJourneyInput {
     ttl: number;
 };
 
-export async function parseJourneyGetInput(value: IJourneyId) {
-    return await Validate<IJourneyId>(journeyIdSchema, value);
-};
-
-export async function parseJourneyStopInput(value: IJourneyId) {
+export async function parseJourneyIdInput(value: IJourneyId) {
     return await Validate<IJourneyId>(journeyIdSchema, value);
 };
 

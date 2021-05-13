@@ -1,19 +1,36 @@
 import { APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 
 import HttpCodes from '../utils/HttpCodes';
-import { parseTokenAuthInput } from '../token/models';
+import { parseJourneyIdInput } from '../journey/models';
+import { parseTokenAuthInput, TokenTypes } from '../token/models';
 import { validateToken } from '../token/methods';
 
 export async function handler(event: APIGatewayRequestAuthorizerEvent) {
     try {
-        const parsedInput = await parseTokenAuthInput({
-            journeyId: event.pathParameters.id,
-            managementToken: event.headers.Authorization
-        });
+        let tokenInput = null;
+        let journeyInput = null;
 
-        console.log(`New [AUTH] request with [${JSON.stringify(parsedInput)}].`);
+        if (event.queryStringParameters?.token) {
+            tokenInput = await parseTokenAuthInput({
+                token: event.queryStringParameters.token,
+                type: TokenTypes.access
+            });
+        } else {
+            tokenInput = await parseTokenAuthInput({
+                token: event.headers.Authorization,
+                type: TokenTypes.management
+            });
+        }
 
-        const policy = await validateToken(parsedInput);
+        if (event.pathParameters?.id) {
+            journeyInput = await parseJourneyIdInput({
+                journeyId: event.pathParameters.id,
+            });
+        }
+
+        console.log(`New [AUTH] request with [${JSON.stringify({ tokenInput, journeyInput })}].`);
+
+        const policy = await validateToken(tokenInput, journeyInput);
 
         return policy;
     } catch (err) {

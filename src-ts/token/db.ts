@@ -19,11 +19,12 @@ const dbClient = new DynamoDBClient({
     region: AWS_REGION
 });
 
-export async function getToken(token: string): Promise<ITokenAuth & IJourneyId> {
+export async function getToken(tokenObj: ITokenAuth): Promise<ITokenAuth & IJourneyId> {
     const params: GetItemCommandInput = {
         TableName: TOKEN_TABLE,
         Key: marshall({
-            ManagementToken: token
+            AppToken: tokenObj.token,
+            Type: tokenObj.type
         })
     };
 
@@ -37,6 +38,7 @@ export async function getToken(token: string): Promise<ITokenAuth & IJourneyId> 
 
     return {
         journeyId: parsedItem.JourneyId,
-        managementToken: parsedItem.ManagementToken
+        token: parsedItem.AppToken,
+        type: parsedItem.Type
     };
 };

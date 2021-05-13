@@ -14,7 +14,7 @@ import {
 } from '@aws-sdk/util-dynamodb';
 
 import { IJourney, IJourneyId, IJourneyLocation } from './models';
-import { ITokenAuth } from '../token/models';
+import { ITokenList } from '../token/models';
 
 const AWS_REGION    = process.env.AWS_REGION;
 const JOURNEY_TABLE = process.env.JOURNEY_TABLE;
@@ -81,10 +81,10 @@ export async function terminateJourney(journeyId: string, endDate: Date) {
     return true;
 };
 
-export async function addNewJourney(journeyObj: IJourney & ITokenAuth) {
+export async function addNewJourney(journeyObj: IJourney & ITokenList) {
     const TTL = Math.round(journeyObj.expireDate.getTime() / 1000);
 
-    const params: TransactWriteItemsCommandInput = {
+    let params: TransactWriteItemsCommandInput = {
         TransactItems: [
             {
                 Put: {
@@ -98,20 +98,24 @@ export async function addNewJourney(journeyObj: IJourney & ITokenAuth) {
                     }),
                     ConditionExpression: 'attribute_not_exists(JourneyId)'
                 }
-            },
-            {
-                Put: {
-                    TableName: TOKEN_TABLE,
-                    Item: marshall({
-                        ManagementToken: journeyObj.managementToken,
-                        JourneyId: journeyObj.journeyId,
-                        TTL: TTL
-                    }),
-                    ConditionExpression: 'attribute_not_exists(ManagementToken)'
-                }
             }
         ]
     };
+
+    journeyObj.tokens.forEach(tokenData => {
+        params.TransactItems.push({
+            Put: {
+                TableName: TOKEN_TABLE,
+                Item: marshall({
+                    AppToken: tokenData.token,
+                    Type: tokenData.type,
+                    TTL: TTL,
+                    JourneyId: journeyObj.journeyId
+                }),
+                ConditionExpression: 'attribute_not_exists(AppToken)'
+            }
+        });
+    });
 
     await dbClient.send(new TransactWriteItemsCommand(params));
 

@@ -5,7 +5,7 @@ import {
     generateToken
 } from '../utils/Generator';
 
-import { ITokenAuth } from '../token/models';
+import { ITokenList, TokenTypes } from '../token/models';
 
 import {
     IJourney,
@@ -62,12 +62,21 @@ export async function startJourney(data: IJourneyInput) {
     const expireDate = new Date();
     expireDate.setSeconds(expireDate.getSeconds() + data.ttl);
 
-    const journeyObj: IJourney & ITokenAuth = {
+    const journeyObj: IJourney & ITokenList = {
         journeyId: journeyId,
         description: data.description,
         startDate: new Date(),
         expireDate: expireDate,
-        managementToken: generateToken(journeyId, data.accessCode)
+        tokens: [
+            {
+                token: generateToken(journeyId, data.accessCode, Math.random().toString()),
+                type: TokenTypes.management
+            },
+            {
+                token: generateToken(journeyId, data.accessCode),
+                type: TokenTypes.access
+            }
+        ]
     };
 
     await addNewJourney(journeyObj);

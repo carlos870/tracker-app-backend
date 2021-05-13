@@ -51,11 +51,15 @@ Resources:
     Properties:
       TableName: TAppTokenTable
       AttributeDefinitions:
-        - AttributeName: ManagementToken
+        - AttributeName: AppToken
+          AttributeType: S
+        - AttributeName: Type
           AttributeType: S
       KeySchema:
-        - AttributeName: ManagementToken
+        - AttributeName: AppToken
           KeyType: HASH
+        - AttributeName: Type
+          KeyType: RANGE
       BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 5
@@ -267,7 +271,7 @@ Resources:
     Properties:
       ApiId: !Ref TAppWsApi
       AuthorizerType: REQUEST
-      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TAppWsAuthFunction.Alias}/invocations
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TAppTokenAuthFunction.Alias}/invocations
       IdentitySource:
         - route.request.querystring.token
       Name: TrackerApp-WsAuth
@@ -290,15 +294,6 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppConnectionTable
 
-  TAppWsAuthFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: TrackerApp-WsAuth
-      Handler: src/handlers/ws-auth.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TAppConnectionTable
-
   TAppOnConnectFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -309,12 +304,6 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppOnDisconnectFunction]]
-      RetentionInDays: 30
-
-  TAppWsAuthFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Join ["/", ["/aws/lambda", !Ref TAppWsAuthFunction]]
       RetentionInDays: 30
 
   TAppOnConnectPermission:
@@ -331,11 +320,11 @@ Resources:
       FunctionName: !Ref TAppOnDisconnectFunction.Alias
       Principal: apigateway.amazonaws.com
 
-  TAppWsAuthPermission:
+  TAppTokenAuthPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref TAppWsAuthFunction.Alias
+      FunctionName: !Ref TAppTokenAuthFunction.Alias
       Principal: apigateway.amazonaws.com
 
 Outputs:

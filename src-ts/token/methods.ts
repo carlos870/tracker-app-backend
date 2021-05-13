@@ -3,23 +3,30 @@ import { IJourneyId } from '../journey/models';
 import { getToken } from './db';
 import Policy, { Effect } from '../utils/Policy';
 
-export async function validateToken(data: ITokenAuth & IJourneyId) {
-    const { journeyId, managementToken } = data;
+export async function validateToken(tokenObj: ITokenAuth, journey?: IJourneyId) {
+    const { token, type } = tokenObj;
 
-    const tokenData = await getToken(managementToken);
+    const tokenResult = await getToken(tokenObj);
 
-    if (tokenData === null || journeyId !== tokenData.journeyId) {
-        console.warn(`Token [${managementToken}] was not found.`);
+    if (tokenResult === null) {
+        console.warn(`Token [${token}] of type [${type}] was not found.`);
 
-        return Policy(managementToken, Effect.deny);
+        return Policy(token, Effect.deny);
     }
 
-    console.log(`Token [${managementToken}] is valid for journey [${journeyId}].`);
+    if (journey && journey.journeyId !== tokenResult.journeyId) {
+        console.warn(`Token [${token}] of type [${type}] belongs to another journey.`);
 
-    let policy = Policy(managementToken, Effect.allow);
+        return Policy(token, Effect.deny);
+    }
+
+    console.log(`Token [${token}] of type [${type}] is valid for journey [${tokenResult.journeyId}].`);
+
+    let policy = Policy(token, Effect.allow);
 
     policy.context = {
-        journeyId: journeyId
+        journeyId: tokenResult.journeyId,
+        tokenType: type
     };
 
     return policy;

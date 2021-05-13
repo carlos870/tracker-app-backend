@@ -2,12 +2,12 @@ import { APIGatewayEvent, APIGatewayEventRequestContext } from 'aws-lambda';
 
 import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
-import { parseJourneyStopInput } from '../journey/models';
+import { parseJourneyIdInput } from '../journey/models';
 import { stopJourney } from '../journey/methods';
 
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
-        const parsedInput = await parseJourneyStopInput({
+        const parsedInput = await parseJourneyIdInput({
             journeyId: event.pathParameters.id
         });
 
