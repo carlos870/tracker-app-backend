@@ -283,6 +283,8 @@ Resources:
       Handler: src/handlers/ws-connect.handler
       Policies:
         - DynamoDBCrudPolicy:
+            TableName: !Ref TAppJourneyTable
+        - DynamoDBCrudPolicy:
             TableName: !Ref TAppConnectionTable
 
   TAppOnDisconnectFunction:
@@ -291,6 +293,8 @@ Resources:
       FunctionName: TrackerApp-OnDisconnect
       Handler: src/handlers/ws-disconnect.handler
       Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TAppJourneyTable
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppConnectionTable
 

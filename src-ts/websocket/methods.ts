@@ -16,7 +16,7 @@ export async function registerConnection(connectionObj: IConnection, journeyObj:
 };
 
 export async function unregisterConnection(connectionObj: IConnection, journeyObj: IJourneyId) {
-    await removeConnection(connectionObj);
+    await removeConnection(connectionObj, journeyObj);
 
     console.log(`Connection [${connectionObj.connectionId}] unregistered from journey [${journeyObj.journeyId}].`);
 
