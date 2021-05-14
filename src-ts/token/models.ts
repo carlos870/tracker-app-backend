@@ -8,7 +8,7 @@ export enum TokenTypes {
 
 export interface ITokenAuth {
     token: string;
-    type: TokenTypes
+    type: TokenTypes;
 };
 
 export interface ITokenList {

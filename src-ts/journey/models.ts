@@ -4,7 +4,7 @@ import HttpCodes from '../utils/HttpCodes';
 import { ICustomError } from '../utils/CustomError';
 
 export interface IJourneyId {
-    journeyId: string
+    journeyId: string;
 };
 
 export interface IJourneyLocation {
@@ -18,7 +18,7 @@ export interface IJourney extends IJourneyId {
     startDate: Date;
     expireDate: Date;
     endDate?: Date;
-    location?: IJourneyLocation
+    location?: IJourneyLocation;
 };
 
 export interface IJourneyInput {
