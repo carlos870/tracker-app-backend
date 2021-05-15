@@ -5,7 +5,8 @@ import {
 } from '@aws-sdk/client-dynamodb';
 
 import {
-    marshall
+    marshall,
+    convertToAttr
 } from '@aws-sdk/util-dynamodb';
 
 import { IConnection } from './models';
@@ -48,11 +49,7 @@ export async function addNewConnection(connectionObj: IConnection, journeyObj: I
                     ConditionExpression: 'attribute_exists(JourneyId)',
                     UpdateExpression: 'ADD ConnectionIDs :con',
                     ExpressionAttributeValues: {
-                        ":con": {
-                            "SS": [
-                                connectionObj.connectionId
-                            ]
-                        }
+                        ":con": convertToAttr(new Set([connectionObj.connectionId]))
                     }
                 }
             }
@@ -90,11 +87,7 @@ export async function removeConnection(connectionObj: IConnection, journeyObj: I
                     ConditionExpression: 'attribute_exists(JourneyId)',
                     UpdateExpression: 'DELETE ConnectionIDs :con',
                     ExpressionAttributeValues: {
-                        ":con": {
-                            "SS": [
-                                connectionObj.connectionId
-                            ]
-                        }
+                        ":con": convertToAttr(new Set([connectionObj.connectionId]))
                     }
                 }
             }
