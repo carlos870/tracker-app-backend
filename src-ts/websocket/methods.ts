@@ -19,9 +19,9 @@ import { IConnection, IMessage } from './models';
 import { IJourneyId } from '../journey/models';
 import { addNewConnection, removeConnection } from './db';
 
-const WS_API = process.env.WS_API;
-const WS_REGION = process.env.AWS_REGION;
-const STAGE_NAME = process.env.API_STAGE_NAME;
+const WS_API        = process.env.WS_API;
+const WS_REGION     = process.env.AWS_REGION;
+const STAGE_NAME    = process.env.API_STAGE_NAME;
 
 const apiClient = new ApiGatewayManagementApiClient({
     region: WS_REGION,
@@ -50,6 +50,12 @@ apiClient.middlewareStack.addRelativeTo(
 );
 // HACK, remove when its fixed on aws-sdk
 
+/**
+ * Registers the provided websocket connection and journey ID in the database.
+ * 
+ * @param connectionObj The websocket data.
+ * @param journeyObj The journey data.
+ */
 export async function registerConnection(connectionObj: IConnection, journeyObj: IJourneyId) {
     const newConnectionObj: IConnection = {
         ...connectionObj,
@@ -63,6 +69,12 @@ export async function registerConnection(connectionObj: IConnection, journeyObj:
     return true;
 };
 
+/**
+ * Unregisters the provided websocket connection from the database.
+ * 
+ * @param connectionObj The websocket data.
+ * @param journeyObj The journey data.
+ */
 export async function unregisterConnection(connectionObj: IConnection, journeyObj: IJourneyId) {
     await removeConnection(connectionObj, journeyObj);
 
@@ -71,6 +83,11 @@ export async function unregisterConnection(connectionObj: IConnection, journeyOb
     return true;
 };
 
+/**
+ * Published a message to a websocket connection.
+ * 
+ * @param messageObj The message to be published. Should have the 'connectionId'.
+ */
 export async function publishNotification(messageObj: IMessage) {
     const { connectionId, data } = messageObj;
 

@@ -19,6 +19,12 @@ const dbClient = new DynamoDBClient({
     region: AWS_REGION
 });
 
+/**
+ * Fetches the provided token from the DynamoDB Tokens table. 
+ * 
+ * @param tokenObj The token data.
+ * @returns Returns an object with the token attributes or null if not found.
+ */
 export async function getToken(tokenObj: ITokenAuth): Promise<ITokenAuth & IJourneyId> {
     const params: GetItemCommandInput = {
         TableName: TOKEN_TABLE,

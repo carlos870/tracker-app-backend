@@ -1,6 +1,6 @@
 {
-    "body": "{\"latitude\":\"123\",\"longitude\":999,\"date\":\"2021-05-11T22:06:11.709+01:00\"}",
+    "body": "{\"latitude\":\"40.741895\",\"longitude\":-73.989308,\"date\":\"2021-05-15T18:00:00.000+01:00\"}",
     "pathParameters": {
-        "id": "EZIZ1M"
+        "id": "1BHKX7"
     }
 }

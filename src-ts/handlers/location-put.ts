@@ -5,6 +5,13 @@ import CustomError from '../utils/CustomError';
 import { parseLocationSetInput } from '../journey/models';
 import { updateLocation } from '../journey/methods';
 
+/**
+ * Handler responsible for processing the PUT location request.
+ * 
+ * @param event The API Gateway event.
+ * @param context The API Gateway request context.
+ * @returns An object with the statusCode for the HTTP response.
+ */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
         const parsedInput = await parseLocationSetInput({

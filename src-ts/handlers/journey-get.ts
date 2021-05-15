@@ -5,6 +5,13 @@ import CustomError from '../utils/CustomError';
 import { parseJourneyIdInput } from '../journey/models';
 import { getJourney } from '../journey/methods';
 
+/**
+ * Handler responsible for processing the GET journey request.
+ * 
+ * @param event The API Gateway event.
+ * @param context The API Gateway request context.
+ * @returns An object with the statusCode for the HTTP response and, if the journey exists, its data.
+ */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
         const parsedInput = await parseJourneyIdInput({

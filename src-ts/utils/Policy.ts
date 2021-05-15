@@ -20,6 +20,13 @@ interface IPolicy {
     context?: object
 };
 
+/**
+ * Generates a new policy to be used by AWS, allowing or denying access to the Invoke api action.
+ * 
+ * @param principalId The ID of the entity this policy should apply to.
+ * @param effect The effect being applied.
+ * @returns The policy document.
+ */
 export default function generate(principalId: string, effect: Effect): IPolicy {
     const policy = {
         principalId: principalId,

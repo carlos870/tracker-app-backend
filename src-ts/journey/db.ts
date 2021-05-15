@@ -29,6 +29,12 @@ const dbClient = new DynamoDBClient({
     region: AWS_REGION
 });
 
+/**
+ * Fetches the journey data associated with the provided journey ID from the DynamoDB Journeys table. 
+ * 
+ * @param journeyId The journey ID.
+ * @returns The journey data, or null if was not found.
+ */
 export async function getJourneyData(journeyId: string) {
     const params: GetItemCommandInput = {
         TableName: JOURNEY_TABLE,
@@ -64,27 +70,11 @@ export async function getJourneyData(journeyId: string) {
     return journeyObj;
 };
 
-export async function terminateJourney(journeyId: string, endDate: Date): Promise<IJourneyConnections> {
-    const params: UpdateItemCommandInput = {
-        TableName: JOURNEY_TABLE,
-        Key: marshall({
-            JourneyId: journeyId
-        }),
-        ConditionExpression: 'attribute_exists(JourneyId) AND attribute_not_exists(EndDate)',
-        UpdateExpression: 'SET EndDate = :endDate',
-        ExpressionAttributeValues: marshall({
-            ":endDate": endDate.toISOString()
-        }),
-        ReturnValues: 'ALL_NEW'
-    };
-
-    const { Attributes } = await dbClient.send(new UpdateItemCommand(params));
-
-    return {
-        connectionIds: Attributes.ConnectionIDs && convertToNative(Attributes.ConnectionIDs) || new Set()
-    };
-};
-
+/**
+ * Registers a new journey in the DynamoDB Journeys and Tokens tables. 
+ * 
+ * @param journeyObj The data to be registered.
+ */
 export async function addNewJourney(journeyObj: IJourney & ITokenList) {
     const TTL = Math.round(journeyObj.expireDate.getTime() / 1000);
 
@@ -126,6 +116,40 @@ export async function addNewJourney(journeyObj: IJourney & ITokenList) {
     return true;
 };
 
+/**
+ * Terminates the provided journey, setting it's end date in the DynamoDB Journeys table.
+ * 
+ * @param journeyId The journey ID.
+ * @param endDate The date to be registered.
+ * @returns Returns the active websocket connections associated with this journey. 
+ */
+export async function terminateJourney(journeyId: string, endDate: Date): Promise<IJourneyConnections> {
+    const params: UpdateItemCommandInput = {
+        TableName: JOURNEY_TABLE,
+        Key: marshall({
+            JourneyId: journeyId
+        }),
+        ConditionExpression: 'attribute_exists(JourneyId) AND attribute_not_exists(EndDate)',
+        UpdateExpression: 'SET EndDate = :endDate',
+        ExpressionAttributeValues: marshall({
+            ":endDate": endDate.toISOString()
+        }),
+        ReturnValues: 'ALL_NEW'
+    };
+
+    const { Attributes } = await dbClient.send(new UpdateItemCommand(params));
+
+    return {
+        connectionIds: Attributes.ConnectionIDs && convertToNative(Attributes.ConnectionIDs) || new Set()
+    };
+};
+
+/**
+ * Updates the provided journey's location, setting it's geolocation attributes in the DynamoDB Journeys table.
+ * 
+ * @param locationData The journey location data.
+ * @returns Returns the active websocket connections associated with this journey. 
+ */
 export async function setJourneyLocation(locationData: IJourneyId & IJourneyLocation): Promise<IJourneyConnections> {
     const params: UpdateItemCommandInput = {
         TableName: JOURNEY_TABLE,

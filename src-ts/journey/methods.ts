@@ -30,6 +30,13 @@ import {
     DbErrors
 } from './db';
 
+/**
+ * Fetches the journey data associated with the provided journey ID.
+ * When the journey is not found, a CustomError is thrown. 
+ * 
+ * @param data The journey ID.
+ * @returns The journey data.
+ */
 export async function getJourney(data: IJourneyId) {
     const { journeyId } = data;
 
@@ -44,6 +51,13 @@ export async function getJourney(data: IJourneyId) {
     return result;
 };
 
+/**
+ * Starts a new journey with the provided data.
+ * The journey ID and access/management tokens are generated and saved.
+ * 
+ * @param data The basic journey data provided by the user.
+ * @returns The full journey data.
+ */
 export async function startJourney(data: IJourneyInput) {
     const journeyId = generateId();
 
@@ -74,6 +88,13 @@ export async function startJourney(data: IJourneyInput) {
     return journeyObj;
 };
 
+/**
+ * Stops the provided journey ID.
+ * The journey it's setted as ended, and a notification is sent 
+ *  to all active websockets listening to this journey's events.
+ * 
+ * @param data The journey ID.
+ */
 export async function stopJourney(data: IJourneyId) {
     const { journeyId } = data;
     const stopDate = new Date();
@@ -105,6 +126,12 @@ export async function stopJourney(data: IJourneyId) {
     return true;
 };
 
+/**
+ * Updates current geolocation of the provided journey.
+ * A notification is sent to all active websockets listening to this journey's events.
+ * 
+ * @param data The journey geolocation data.
+ */
 export async function updateLocation(data: IJourneyId & IJourneyLocation) {
     const { journeyId, latitude, longitude } = data;
 

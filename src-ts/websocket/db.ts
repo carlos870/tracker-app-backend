@@ -19,6 +19,12 @@ const dbClient = new DynamoDBClient({
     region: AWS_REGION
 });
 
+/**
+ * Registers a new Websocket connection in the DynamoDB Connections and Journeys tables. 
+ * 
+ * @param connectionObj The connection data.
+ * @param journeyObj The journey data.
+ */
 export async function addNewConnection(connectionObj: IConnection, journeyObj: IJourneyId) {
     const params: TransactWriteItemsCommandInput = {
         TransactItems: [
@@ -58,6 +64,12 @@ export async function addNewConnection(connectionObj: IConnection, journeyObj: I
     return true;
 };
 
+/**
+ * Unregisters a Websocket connection from the DynamoDB Connections and Journeys tables. 
+ * 
+ * @param connectionObj The connection data.
+ * @param journeyObj The journey data.
+ */
 export async function removeConnection(connectionObj: IConnection, journeyObj: IJourneyId) {
     const params: TransactWriteItemsCommandInput = {
         TransactItems: [

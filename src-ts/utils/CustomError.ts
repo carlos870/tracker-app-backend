@@ -9,6 +9,13 @@ export interface ICustomErrorHttpResponse {
     body: string
 };
 
+/**
+ * A class responsible for extending the default Error Object and add new functionality.
+ * The added properties are used to facilitate the integration with the Lambda system, and are
+ *  related with the 'statusCode' and 'body' props needed to reply to HTTP requests.
+ * 
+ * This class should be instanciated with an object that implements ICustomError interface.
+ */
 export default class CustomError extends Error implements ICustomError {
     public readonly code: string;
     public readonly message: string;

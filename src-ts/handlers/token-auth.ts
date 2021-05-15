@@ -5,6 +5,12 @@ import { parseJourneyIdInput } from '../journey/models';
 import { parseTokenAuthInput, TokenTypes } from '../token/models';
 import { validateToken } from '../token/methods';
 
+/**
+ * Handler responsible for processing the authentication middleware.
+ * 
+ * @param event The API Gateway authorizer event.
+ * @returns The AWS policy to be associated with this request or an error statusCode.
+ */
 export async function handler(event: APIGatewayRequestAuthorizerEvent) {
     try {
         let tokenInput = null;

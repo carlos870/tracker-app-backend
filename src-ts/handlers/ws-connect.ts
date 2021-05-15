@@ -6,6 +6,13 @@ import { parseJourneyIdInput } from '../journey/models';
 import { parseConnectionInput } from '../websocket/models';
 import { registerConnection } from '../websocket/methods';
 
+/**
+ * Handler responsible for processing the websocket connection event.
+ * 
+ * @param event The API Gateway event.
+ * @param context The API Gateway request context.
+ * @returns An object with the statusCode for the HTTP response.
+ */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
         const connectionInput = await parseConnectionInput({
