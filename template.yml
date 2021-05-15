@@ -24,6 +24,8 @@ Globals:
         JOURNEY_TABLE: !Ref TAppJourneyTable
         TOKEN_TABLE: !Ref TAppTokenTable
         CONNECTIONS_TABLE: !Ref TAppConnectionTable
+        WS_API: !Ref TAppWsApi
+        API_STAGE_NAME: !Ref StageName
 
 Resources:
   TAppJourneyTable:
@@ -154,6 +156,12 @@ Resources:
             TableName: !Ref TAppJourneyTable
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppTokenTable
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource: "*"
       Events:
         ApiEvent:
           Type: Api
@@ -172,6 +180,12 @@ Resources:
             TableName: !Ref TAppJourneyTable
         - DynamoDBCrudPolicy:
             TableName: !Ref TAppTokenTable
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource: "*"
       Events:
         ApiEvent:
           Type: Api

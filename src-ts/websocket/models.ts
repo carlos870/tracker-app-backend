@@ -6,6 +6,11 @@ export interface IConnection {
     registerDate?: Date;
 };
 
+export interface IMessage {
+    connectionId: string;
+    data: object;
+};
+
 export async function parseConnectionInput(value: IConnection) {
     return await Validate<IConnection>(connectionInputSchema, value);
 };

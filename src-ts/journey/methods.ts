@@ -5,13 +5,20 @@ import {
     generateToken
 } from '../utils/Generator';
 
-import { ITokenList, TokenTypes } from '../token/models';
+import { publishNotification } from '../websocket/methods';
+import { IMessage } from '../websocket/models';
+
+import {
+    ITokenList,
+    TokenTypes
+} from '../token/models';
 
 import {
     IJourney,
     IJourneyId,
     IJourneyInput,
     IJourneyLocation,
+    IJourneyConnections,
     Errors
 } from './models';
 
@@ -35,25 +42,6 @@ export async function getJourney(data: IJourneyId) {
     console.log(`Returning journey [${JSON.stringify(result)}].`);
 
     return result;
-};
-
-export async function stopJourney(data: IJourneyId) {
-    const { journeyId } = data;
-    const stopDate = new Date();
-
-    try {
-        await terminateJourney(journeyId, stopDate);
-    } catch (err) {
-        if (err.name === DbErrors.ConditionalCheckFailedException) {
-            throw new CustomError(Errors.NOT_FOUND);
-        }
-
-        throw err;
-    }
-
-    console.log(`Journey [${journeyId}] successfully stopped.`);
-
-    return true;
 };
 
 export async function startJourney(data: IJourneyInput) {
@@ -86,11 +74,44 @@ export async function startJourney(data: IJourneyInput) {
     return journeyObj;
 };
 
+export async function stopJourney(data: IJourneyId) {
+    const { journeyId } = data;
+    const stopDate = new Date();
+
+    let connections: IJourneyConnections = null;
+
+    try {
+        connections = await terminateJourney(journeyId, stopDate);
+    } catch (err) {
+        if (err.name === DbErrors.ConditionalCheckFailedException) {
+            throw new CustomError(Errors.NOT_FOUND);
+        }
+
+        throw err;
+    }
+
+    console.log(`Journey [${journeyId}] successfully stopped.`);
+
+    for (const connId of connections.connectionIds) {
+        await publishNotification({
+            connectionId: connId,
+            data: {
+                journeyId: journeyId,
+                endDate: stopDate
+            }
+        } as IMessage);
+    }
+
+    return true;
+};
+
 export async function updateLocation(data: IJourneyId & IJourneyLocation) {
     const { journeyId, latitude, longitude } = data;
 
+    let connections: IJourneyConnections = null;
+
     try {
-        await setJourneyLocation(data);
+        connections = await setJourneyLocation(data);
     } catch (err) {
         if (err.name === DbErrors.ConditionalCheckFailedException) {
             throw new CustomError(Errors.NOT_FOUND);
@@ -100,6 +121,13 @@ export async function updateLocation(data: IJourneyId & IJourneyLocation) {
     }
 
     console.log(`Journey [${journeyId}] successfully updated with position [${latitude} / ${longitude}].`);
+
+    for (const connId of connections.connectionIds) {
+        await publishNotification({
+            connectionId: connId,
+            data: data
+        } as IMessage);
+    }
 
     return true;
 };

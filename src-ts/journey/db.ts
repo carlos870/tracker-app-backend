@@ -10,10 +10,11 @@ import {
 
 import {
     marshall,
-    unmarshall
+    unmarshall,
+    convertToNative
 } from '@aws-sdk/util-dynamodb';
 
-import { IJourney, IJourneyId, IJourneyLocation } from './models';
+import { IJourney, IJourneyId, IJourneyLocation, IJourneyConnections } from './models';
 import { ITokenList } from '../token/models';
 
 const AWS_REGION    = process.env.AWS_REGION;
@@ -63,7 +64,7 @@ export async function getJourneyData(journeyId: string) {
     return journeyObj;
 };
 
-export async function terminateJourney(journeyId: string, endDate: Date) {
+export async function terminateJourney(journeyId: string, endDate: Date): Promise<IJourneyConnections> {
     const params: UpdateItemCommandInput = {
         TableName: JOURNEY_TABLE,
         Key: marshall({
@@ -73,12 +74,15 @@ export async function terminateJourney(journeyId: string, endDate: Date) {
         UpdateExpression: 'SET EndDate = :endDate',
         ExpressionAttributeValues: marshall({
             ":endDate": endDate.toISOString()
-        })
+        }),
+        ReturnValues: 'ALL_NEW'
     };
 
-    await dbClient.send(new UpdateItemCommand(params));
+    const { Attributes } = await dbClient.send(new UpdateItemCommand(params));
 
-    return true;
+    return {
+        connectionIds: Attributes.ConnectionIDs && convertToNative(Attributes.ConnectionIDs) || new Set()
+    };
 };
 
 export async function addNewJourney(journeyObj: IJourney & ITokenList) {
@@ -122,7 +126,7 @@ export async function addNewJourney(journeyObj: IJourney & ITokenList) {
     return true;
 };
 
-export async function setJourneyLocation(locationData: IJourneyId & IJourneyLocation) {
+export async function setJourneyLocation(locationData: IJourneyId & IJourneyLocation): Promise<IJourneyConnections> {
     const params: UpdateItemCommandInput = {
         TableName: JOURNEY_TABLE,
         Key: marshall({
@@ -134,10 +138,13 @@ export async function setJourneyLocation(locationData: IJourneyId & IJourneyLoca
             ":lat": locationData.latitude,
             ":lon": locationData.longitude,
             ":upDate": locationData.date.toISOString()
-        })
+        }),
+        ReturnValues: 'ALL_NEW'
     };
 
-    await dbClient.send(new UpdateItemCommand(params));
+    const { Attributes } = await dbClient.send(new UpdateItemCommand(params));
 
-    return true;
+    return {
+        connectionIds: Attributes.ConnectionIDs && convertToNative(Attributes.ConnectionIDs) || new Set()
+    };
 };

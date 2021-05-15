@@ -13,9 +13,10 @@
     "author": "carlos870",
     "license": "ISC",
     "dependencies": {
-        "@aws-sdk/client-apigatewaymanagementapi": "^3.14.0",
+        "@aws-sdk/client-apigatewaymanagementapi": "^3.16.0",
         "@aws-sdk/client-dynamodb": "^3.14.0",
         "@aws-sdk/util-dynamodb": "^3.14.0",
+        "@aws-sdk/util-utf8-node": "^3.13.1",
         "joi": "^17.4.0",
         "nanoid": "^3.1.22"
     },

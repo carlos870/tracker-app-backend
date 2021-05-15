@@ -13,6 +13,10 @@ export interface IJourneyLocation {
     date: Date;
 };
 
+export interface IJourneyConnections {
+    connectionIds: Set<string>;
+};
+
 export interface IJourney extends IJourneyId {
     description: string;
     startDate: Date;
