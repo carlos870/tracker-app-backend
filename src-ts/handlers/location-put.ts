@@ -4,6 +4,8 @@ import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
 import { parseLocationSetInput } from '../journey/models';
 import { updateLocation } from '../journey/methods';
+import { filterTokenAuthContext, TokenTypes } from '../token/models';
+import { validateScope } from '../token/methods';
 
 /**
  * Handler responsible for processing the PUT location request.
@@ -14,6 +16,8 @@ import { updateLocation } from '../journey/methods';
  */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
+        await validateScope(filterTokenAuthContext(event), TokenTypes.management);
+
         const parsedInput = await parseLocationSetInput({
             ...JSON.parse(event.body),
             journeyId: event.pathParameters.id

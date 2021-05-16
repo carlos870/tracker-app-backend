@@ -9,7 +9,7 @@ import {
     unmarshall
 } from '@aws-sdk/util-dynamodb';
 
-import { ITokenAuth } from './models';
+import { IToken, ITokenAuth } from './models';
 import { IJourneyId } from '../journey/models';
 
 const AWS_REGION    = process.env.AWS_REGION;
@@ -25,12 +25,11 @@ const dbClient = new DynamoDBClient({
  * @param tokenObj The token data.
  * @returns Returns an object with the token attributes or null if not found.
  */
-export async function getToken(tokenObj: ITokenAuth): Promise<ITokenAuth & IJourneyId> {
+export async function getToken(tokenObj: IToken): Promise<ITokenAuth & IJourneyId> {
     const params: GetItemCommandInput = {
         TableName: TOKEN_TABLE,
         Key: marshall({
-            AppToken: tokenObj.token,
-            Type: tokenObj.type
+            AppToken: tokenObj.token
         })
     };
 

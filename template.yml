@@ -55,13 +55,9 @@ Resources:
       AttributeDefinitions:
         - AttributeName: AppToken
           AttributeType: S
-        - AttributeName: Type
-          AttributeType: S
       KeySchema:
         - AttributeName: AppToken
           KeyType: HASH
-        - AttributeName: Type
-          KeyType: RANGE
       BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 5
@@ -102,7 +98,7 @@ Resources:
         Authorizers:
           TAppRestRequestAuthorizer:
             FunctionPayloadType: REQUEST
-            FunctionArn: !GetAtt TAppTokenAuthFunction.Arn
+            FunctionArn: !Ref TAppTokenAuthFunction.Alias
             ReauthorizeEvery: 600
             Identity:
               Headers:

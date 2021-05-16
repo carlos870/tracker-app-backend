@@ -4,6 +4,8 @@ import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
 import { parseJourneyIdInput } from '../journey/models';
 import { getJourney } from '../journey/methods';
+import { filterTokenAuthContext, TokenTypes } from '../token/models';
+import { validateScope } from '../token/methods';
 
 /**
  * Handler responsible for processing the GET journey request.
@@ -14,6 +16,8 @@ import { getJourney } from '../journey/methods';
  */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
+        await validateScope(filterTokenAuthContext(event), TokenTypes.access);
+
         const parsedInput = await parseJourneyIdInput({
             journeyId: event.pathParameters.id
         });

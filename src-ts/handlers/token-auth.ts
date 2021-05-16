@@ -2,7 +2,7 @@ import { APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 
 import HttpCodes from '../utils/HttpCodes';
 import { parseJourneyIdInput } from '../journey/models';
-import { parseTokenAuthInput, TokenTypes } from '../token/models';
+import { parseTokenInput } from '../token/models';
 import { validateToken } from '../token/methods';
 
 /**
@@ -13,20 +13,11 @@ import { validateToken } from '../token/methods';
  */
 export async function handler(event: APIGatewayRequestAuthorizerEvent) {
     try {
-        let tokenInput = null;
-        let journeyInput = null;
+        const tokenInput = await parseTokenInput({
+            token: event.headers?.Authorization || event.queryStringParameters?.token
+        });
 
-        if (event.queryStringParameters?.token) {
-            tokenInput = await parseTokenAuthInput({
-                token: event.queryStringParameters.token,
-                type: TokenTypes.access
-            });
-        } else {
-            tokenInput = await parseTokenAuthInput({
-                token: event.headers.Authorization,
-                type: TokenTypes.management
-            });
-        }
+        let journeyInput = null;
 
         if (event.pathParameters?.id) {
             journeyInput = await parseJourneyIdInput({

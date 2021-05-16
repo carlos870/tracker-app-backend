@@ -4,6 +4,8 @@ import HttpCodes from '../utils/HttpCodes';
 import CustomError from '../utils/CustomError';
 import { parseJourneyIdInput } from '../journey/models';
 import { stopJourney } from '../journey/methods';
+import { filterTokenAuthContext, TokenTypes } from '../token/models';
+import { validateScope } from '../token/methods';
 
 /**
  * Handler responsible for processing the DELETE journey request.
@@ -14,6 +16,8 @@ import { stopJourney } from '../journey/methods';
  */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
+        await validateScope(filterTokenAuthContext(event), TokenTypes.management);
+
         const parsedInput = await parseJourneyIdInput({
             journeyId: event.pathParameters.id
         });

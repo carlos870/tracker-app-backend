@@ -5,6 +5,8 @@ import CustomError from '../utils/CustomError';
 import { parseJourneyIdInput } from '../journey/models';
 import { parseConnectionInput } from '../websocket/models';
 import { registerConnection } from '../websocket/methods';
+import { filterTokenAuthContext, TokenTypes } from '../token/models';
+import { validateScope } from '../token/methods';
 
 /**
  * Handler responsible for processing the websocket connection event.
@@ -15,6 +17,8 @@ import { registerConnection } from '../websocket/methods';
  */
 export async function handler(event: APIGatewayEvent, context: APIGatewayEventRequestContext) {
     try {
+        await validateScope(filterTokenAuthContext(event), TokenTypes.access);
+
         const connectionInput = await parseConnectionInput({
             connectionId: event.requestContext.connectionId
         });
