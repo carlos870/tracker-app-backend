@@ -1,5 +1,11 @@
 {
     "pathParameters": {
         "id": "1BHKX7"
+    },
+    "requestContext": {
+        "authorizer": {
+            "tokenVal": "xpto",
+            "tokenType": "management"
+        }
     }
 }
