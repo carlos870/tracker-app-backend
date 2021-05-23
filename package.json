@@ -1,6 +1,6 @@
 {
     "name": "tracker-app-backend",
-    "description": "Some description about TrackerApp.",
+    "description": "The backend infrastructure powering TrackerApp.",
     "version": "1.0.0",
     "scripts": {
         "test": "jest",
